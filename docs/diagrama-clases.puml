@@ -1,0 +1,302 @@
+@startuml DiagramaClases_JuegosClienteServidor
+!theme plain
+title "Diagrama de Clases - Sistema de Juegos Cliente-Servidor"
+
+package "com.juegos.main" {
+    class MainApplication {
+        -primaryStage: Stage
+        +start(stage: Stage): void
+        +main(args: String[]): void
+    }
+    
+    class SwingMainApplication {
+        -frame: JFrame
+        +main(args: String[]): void
+        -createMainMenu(): void
+    }
+}
+
+package "com.juegos.common" {
+    class Player {
+        -id: String
+        -name: String
+        -ipAddress: String
+        -wins: int
+        -losses: int
+        -currentGame: String
+        +getId(): String
+        +getName(): String
+        +getWins(): int
+        +incrementWins(): void
+        +incrementLosses(): void
+    }
+    
+    class GameMessage {
+        -type: String
+        -sender: String
+        -content: String
+        -timestamp: long
+        +getType(): String
+        +getContent(): String
+        +toJson(): String
+        +fromJson(json: String): GameMessage
+    }
+    
+    class GameConstants {
+        +TICTACTOE_BOARD_SIZE: int
+        +BATTLESHIP_BOARD_SIZE: int
+        +SHIP_SIZES: int[]
+        +SHIP_NAMES: String[]
+        +AI_THINKING_DELAY: int
+    }
+}
+
+package "com.juegos.servidor" {
+    class GameServer {
+        -serverSocket: ServerSocket
+        -clientHandlers: Set<ClientHandler>
+        -gameRooms: Map<String, GameRoom>
+        -executor: ExecutorService
+        -running: boolean
+        +start(): void
+        +stop(): void
+        +registerClient(handler: ClientHandler): void
+        +removeClient(handler: ClientHandler): void
+        +createGameRoom(gameType: String): GameRoom
+    }
+    
+    class ClientHandler {
+        -socket: Socket
+        -in: BufferedReader
+        -out: PrintWriter
+        -player: Player
+        -currentRoom: GameRoom
+        -server: GameServer
+        +run(): void
+        +sendMessage(message: String): void
+        +handleMessage(message: GameMessage): void
+        +joinRoom(room: GameRoom): void
+    }
+    
+    class GameRoom {
+        -roomId: String
+        -gameType: String
+        -players: List<ClientHandler>
+        -gameInstance: Object
+        -maxPlayers: int
+        -gameStarted: boolean
+        +addPlayer(handler: ClientHandler): boolean
+        +removePlayer(handler: ClientHandler): void
+        +startGame(): void
+        +processMove(playerId: String, moveData: String): boolean
+        +broadcastToAll(message: String): void
+    }
+}
+
+package "com.juegos.tictactoe" {
+    class TicTacToeGame {
+        -board: char[][]
+        -player1: Player
+        -player2: Player
+        -currentPlayer: Player
+        -gameEnded: boolean
+        -winner: String
+        -movesCount: int
+        +setPlayers(p1: Player, p2: Player): void
+        +makeMove(row: int, col: int): boolean
+        +checkWinner(): String
+        +getBoardCopy(): char[][]
+        +resetGame(): void
+        +isGameOver(): boolean
+        +getCurrentPlayer(): char
+    }
+    
+    class TicTacToeAI {
+        -aiSymbol: char
+        -humanSymbol: char
+        -game: TicTacToeGame
+        +getBestMove(): String
+        +minimax(board: char[][], depth: int, isMaximizing: boolean, alpha: int, beta: int): int
+        +evaluateBoard(board: char[][]): int
+        +getRandomMove(): String
+        +getStrategicMove(): String
+        +findWinningMove(board: char[][], symbol: char): String
+        +getMove(difficulty: int): String
+    }
+}
+
+package "com.juegos.battleship" {
+    class BattleshipGame {
+        -playerBoard: Board
+        -opponentBoard: Board
+        -player1: Player
+        -player2: Player
+        -currentPlayer: Player
+        -gamePhase: String
+        -gameEnded: boolean
+        -winner: String
+        -totalTurns: int
+        +setPlayers(p1: Player, p2: Player): void
+        +makeMove(playerId: String, moveData: String): boolean
+        +startBattlePhase(): void
+        +autoSetupShips(playerId: String): boolean
+        +checkGameEnd(): String
+        +resetGame(): void
+        +getGameState(): String
+    }
+    
+    class Board {
+        -grid: char[][]
+        -enemyView: char[][]
+        -ships: Ship[]
+        -shots: List<String>
+        -hits: List<String>
+        -misses: List<String>
+        -setupComplete: boolean
+        +placeShip(shipIndex: int, row: int, col: int, horizontal: boolean): boolean
+        +removeShip(shipIndex: int): boolean
+        +receiveShot(row: int, col: int): String
+        +recordShot(row: int, col: int, result: String): void
+        +allShipsSunk(): boolean
+        +autoPlaceShips(): boolean
+        +getValidTargets(): List<String>
+        +reset(): void
+    }
+    
+    class Ship {
+        -size: int
+        -name: String
+        -startRow: int
+        -startCol: int
+        -isHorizontal: boolean
+        -hits: boolean[]
+        -isPlaced: boolean
+        +place(row: int, col: int, horizontal: boolean): void
+        +hit(row: int, col: int): boolean
+        +isSunk(): boolean
+        +occupiesPosition(row: int, col: int): boolean
+        +getPositions(): String[]
+        +fitsInBoard(row: int, col: int, horizontal: boolean, size: int): boolean
+        +overlapsWith(other: Ship): boolean
+        +copy(): Ship
+        +createStandardFleet(): Ship[]
+    }
+    
+    class BattleshipAI {
+        -enemyBoard: Board
+        -ownBoard: Board
+        -targetQueue: List<String>
+        -processedHits: Set<String>
+        -currentMode: AIMode
+        -lastHit: String
+        -huntingMode: boolean
+        -huntDirection: String
+        -consecutiveHits: int
+        -random: Random
+        +getBestAttack(): String
+        +processAttackResult(row: int, col: int, result: String): void
+        +reset(): void
+        -placeShipsWithBacktracking(): boolean
+        -backtrackPlaceShips(ships: Ship[], index: int): boolean
+        -executeHuntStrategy(): String
+        -executeTargetStrategy(): String
+        -executeFinishStrategy(): String
+        +getPerformanceStats(): Map<String, Object>
+    }
+    
+    enum AIMode {
+        HUNT
+        TARGET
+        FINISH
+    }
+}
+
+package "com.juegos.ui" {
+    class MenuController {
+        -serverButton: Button
+        -clientButton: Button
+        -tictactoeAIButton: Button
+        -battleshipAIButton: Button
+        -exitButton: Button
+        +startServer(): void
+        +startClient(): void
+        +startTicTacToeAI(): void
+        +startBattleshipAI(): void
+        +exitApplication(): void
+    }
+    
+    class TicTacToeWindow {
+        -board: JButton[][]
+        -statusLabel: JLabel
+        -gameLogic: TicTacToeGame
+        -ai: TicTacToeAI
+        -isPlayerTurn: boolean
+        +createBoard(): JPanel
+        +handleCellClick(row: int, col: int): void
+        +updateBoard(): void
+        +checkGameEnd(): void
+    }
+    
+    class BattleshipWindow {
+        -playerBoard: JButton[][]
+        -enemyBoard: JButton[][]
+        -statusLabel: JLabel
+        -gameLogic: BattleshipGame
+        -ai: BattleshipAI
+        -isPlayerTurn: boolean
+        +createPlayerBoard(): JPanel
+        +createEnemyBoard(): JPanel
+        +placeShipsRandomly(): void
+        +attackEnemy(row: int, col: int): void
+        +enemyAttack(): void
+    }
+}
+
+package "com.juegos.cliente" {
+    class ConsoleClient {
+        -socket: Socket
+        -out: PrintWriter
+        -in: BufferedReader
+        -scanner: Scanner
+        -player: Player
+        -connected: boolean
+        +start(): void
+        +connectToServer(): void
+        +playTicTacToeVsAI(): void
+        +playBattleshipVsAI(): void
+        -showMainMenu(): void
+        -getIntInput(prompt: String): int
+    }
+}
+
+' Relaciones principales
+GameServer ||--o{ ClientHandler : "1..*"
+GameServer ||--o{ GameRoom : "1..*"
+ClientHandler }o--|| Player : "1"
+ClientHandler }o--o| GameRoom : "0..1"
+GameRoom ||--o{ TicTacToeGame : "0..1"
+GameRoom ||--o{ BattleshipGame : "0..1"
+
+TicTacToeGame ||--o{ Player : "2"
+TicTacToeGame ||--o| TicTacToeAI : "0..1"
+
+BattleshipGame ||--|| Board : "2"
+BattleshipGame ||--o{ Player : "2"
+BattleshipGame ||--o| BattleshipAI : "0..1"
+
+Board ||--o{ Ship : "1..*"
+BattleshipAI ||--|| Board : "2"
+BattleshipAI ||--|| AIMode : "1"
+
+MenuController ||--o| TicTacToeWindow : "0..1"
+MenuController ||--o| BattleshipWindow : "0..1"
+
+TicTacToeWindow ||--|| TicTacToeGame : "1"
+TicTacToeWindow ||--o| TicTacToeAI : "0..1"
+
+BattleshipWindow ||--|| BattleshipGame : "1"
+BattleshipWindow ||--o| BattleshipAI : "0..1"
+
+ConsoleClient ||--o| Player : "0..1"
+
+@enduml

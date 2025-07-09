@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Diagrama de Colaboración - Sistema de Juegos</title>
+    <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .diagram-container {
+            width: 100%;
+            text-align: center;
+            background: white;
+        }
+        .mermaid {
+            background: white;
+        }
+        .export-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+        }
+        .export-button:hover {
+            background: #005a9e;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .description {
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Diagrama de Colaboración - Sistema de Juegos Cliente-Servidor</h1>
+    
+    <div class="description">
+        <h3>Escenario: Jugar Tic-Tac-Toe vs Inteligencia Artificial</h3>
+        <p><strong>Descripción:</strong> Este diagrama muestra la colaboración entre objetos durante una partida de Tic-Tac-Toe donde un jugador humano compite contra la inteligencia artificial. Se ilustran las interacciones numeradas secuencialmente.</p>
+        
+        <h4>Flujo de Colaboración:</h4>
+        <ul>
+            <li><strong>1-3:</strong> Establecimiento de conexión cliente-servidor</li>
+            <li><strong>4-6:</strong> Configuración y creación del juego</li>
+            <li><strong>7-9:</strong> Procesamiento del movimiento del jugador</li>
+            <li><strong>10-12:</strong> Cálculo y aplicación del movimiento de la IA</li>
+            <li><strong>13-14:</strong> Verificación de victoria y actualización del cliente</li>
+        </ul>
+    </div>
+    
+    <button class="export-button" onclick="exportDiagram()">📸 Exportar PNG</button>
+    
+    <div class="diagram-container">
+        <div class="mermaid">
+graph LR
+    %% ===== OBJETOS COMO EN LA FOTO =====
+    cliente[":Cliente<br/>(MenuController)"]
+    servidor[":GameServer"]
+    handler[":ClientHandler"]
+    sala[":GameRoom"]
+    juego[":TicTacToeGame"]
+    ia[":TicTacToeAI"]
+    jugador[":Player"]
+    
+    %% ===== CONEXIONES ESTRUCTURALES =====
+    cliente -.-> servidor
+    servidor -.-> handler
+    handler -.-> sala
+    sala -.-> juego
+    juego -.-> ia
+    handler -.-> jugador
+    
+    %% ===== MENSAJES NUMERADOS COMO EN LA FOTO =====
+    cliente -->|"1: conectar(puerto)"| servidor
+    servidor -->|"2: crearClientHandler(socket)"| handler
+    handler -->|"3: crearJugador(nombre, id)"| jugador
+    
+    cliente -->|"4: seleccionarJuego('TICTACTOE')"| handler
+    handler -->|"5: crearSala(tipoJuego)"| sala
+    sala -->|"6: inicializarJuego()"| juego
+    
+    cliente -->|"7: realizarMovimiento(fila, col)"| handler
+    handler -->|"8: validarMovimiento(fila, col)"| juego
+    juego -->|"9: actualizarTablero(fila, col)"| juego
+    
+    juego -->|"10: calcularMejorJugada(tablero)"| ia
+    ia -->|"11: devolverMovimiento(filaIA, colIA)"| juego
+    juego -->|"12: aplicarMovimientoIA(filaIA, colIA)"| juego
+    
+    juego -->|"13: verificarVictoria()"| juego
+    handler -->|"14: enviarEstadoJuego(resultado)"| cliente
+    
+    %% ===== ESTILOS COMO LA FOTO =====
+    classDef objetoCliente fill:#ffffff,stroke:#000000,stroke-width:2px,font-size:11px
+    classDef objetoServidor fill:#ffffff,stroke:#000000,stroke-width:2px,font-size:11px
+    classDef objetoJuego fill:#ffffff,stroke:#000000,stroke-width:2px,font-size:11px
+    classDef objetoIA fill:#ffffff,stroke:#000000,stroke-width:2px,font-size:11px
+    
+    class cliente objetoCliente
+    class servidor,handler,sala objetoServidor
+    class juego objetoJuego
+    class ia objetoIA
+    class jugador objetoCliente
+        </div>
+    </div>
+    
+    <div class="description">
+        <h4>Responsabilidades de los Objetos:</h4>
+        <ul>
+            <li><strong>Cliente (MenuController):</strong> Interfaz gráfica, manejo de eventos UI, envío de comandos</li>
+            <li><strong>GameServer:</strong> Aceptar conexiones, gestionar múltiples clientes, coordinar salas</li>
+            <li><strong>ClientHandler:</strong> Comunicación bidireccional con cliente específico</li>
+            <li><strong>GameRoom:</strong> Contenedor de jugadores, gestión del estado del juego</li>
+            <li><strong>TicTacToeGame:</strong> Lógica del juego, validación de movimientos, detección de victoria</li>
+            <li><strong>TicTacToeAI:</strong> Algoritmo Minimax, evaluación de tablero, decisiones estratégicas</li>
+            <li><strong>Player:</strong> Representación del jugador, estado de conexión, puntuación</li>
+        </ul>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#ffffff',
+                background: '#ffffff',
+                secondaryColor: '#f9f9f9',
+                tertiaryColor: '#f0f0f0'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+
+        function exportDiagram() {
+            setTimeout(() => {
+                const svg = document.querySelector('.mermaid svg');
+                if (svg) {
+                    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                    svg.style.background = 'white';
+                    
+                    const svgData = new XMLSerializer().serializeToString(svg);
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    
+                    img.onload = function() {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0);
+                        
+                        const link = document.createElement('a');
+                        link.download = 'diagrama-colaboracion.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    };
+                    
+                    const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                    const url = URL.createObjectURL(blob);
+                    img.src = url;
+                } else {
+                    alert('Por favor espera a que el diagrama se renderice completamente');
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

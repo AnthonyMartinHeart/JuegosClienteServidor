@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+    <title>Diagrama de Casos de Uso - Sistema de Juegos Cliente-Servidor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .mermaid {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #007acc;
+        }
+        .legend h3 {
+            margin-top: 0;
+            color: #007acc;
+        }
+        .legend ul {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagrama de Casos de Uso</h1>
+        <h2 style="text-align: center; color: #666;">Sistema de Juegos Cliente-Servidor</h2>
+        
+        <div class="mermaid">
+flowchart TB
+    %% ===== ACTORES (Estilo formal UML) =====
+    Jugador[("👤<br/>Jugador<br/>(Cliente)")]
+    IA[("🤖<br/>Inteligencia<br/>Artificial")]
+    Servidor[("⚙️<br/>Administrador<br/>Servidor")]
+    
+    %% ===== FRONTERA DEL SISTEMA =====
+    subgraph Sistema["🎮 Sistema de Juegos Cliente-Servidor"]
+        %% Casos de uso de gestión
+        UC01("Conectar al<br/>Servidor")
+        UC02("Autenticar<br/>Usuario")
+        UC03("Seleccionar<br/>Juego")
+        UC04("Desconectarse<br/>del Sistema")
+        
+        %% Casos de uso Tic-Tac-Toe
+        UC05("Iniciar Partida<br/>Tic-Tac-Toe")
+        UC06("Realizar<br/>Movimiento TTT")
+        UC07("Validar<br/>Movimiento TTT")
+        UC08("Calcular Jugada<br/>Óptima (IA)")
+        
+        %% Casos de uso Batalla Naval
+        UC09("Iniciar Partida<br/>Batalla Naval")
+        UC10("Configurar<br/>Tablero")
+        UC11("Colocar<br/>Barcos")
+        UC12("Realizar<br/>Disparo")
+        UC13("Procesar<br/>Impacto")
+        UC14("Calcular<br/>Estrategia Naval")
+        
+        %% Casos de uso del sistema
+        UC15("Gestionar<br/>Conexiones")
+        UC16("Crear Sala<br/>de Juego")
+        UC17("Sincronizar<br/>Estado Juego")
+        UC18("Validar<br/>Condición Victoria")
+        UC19("Registrar<br/>Resultados")
+        UC20("Notificar<br/>Eventos")
+    end
+    
+    %% ===== RELACIONES ACTOR-CASO USO =====
+    %% Jugador principal
+    Jugador --> UC01
+    Jugador --> UC03
+    Jugador --> UC04
+    Jugador --> UC05
+    Jugador --> UC06
+    Jugador --> UC09
+    Jugador --> UC10
+    Jugador --> UC11
+    Jugador --> UC12
+    
+    %% Inteligencia Artificial
+    IA --> UC08
+    IA --> UC14
+    
+    %% Servidor/Administrador
+    Servidor --> UC15
+    Servidor --> UC16
+    Servidor --> UC17
+    Servidor --> UC19
+    Servidor --> UC20
+    
+    %% ===== RELACIONES INCLUDE =====
+    UC01 -.->|"≪include≫"| UC02
+    UC01 -.->|"≪include≫"| UC15
+    UC03 -.->|"≪include≫"| UC16
+    UC05 -.->|"≪include≫"| UC06
+    UC09 -.->|"≪include≫"| UC10
+    UC09 -.->|"≪include≫"| UC11
+    UC06 -.->|"≪include≫"| UC07
+    UC12 -.->|"≪include≫"| UC13
+    UC06 -.->|"≪include≫"| UC18
+    UC12 -.->|"≪include≫"| UC18
+    UC05 -.->|"≪include≫"| UC17
+    UC09 -.->|"≪include≫"| UC17
+    UC18 -.->|"≪include≫"| UC19
+    UC17 -.->|"≪include≫"| UC20
+    
+    %% ===== RELACIONES EXTEND =====
+    UC08 -.->|"≪extend≫<br/>[vs IA]"| UC06
+    UC14 -.->|"≪extend≫<br/>[vs IA]"| UC12
+    
+    %% ===== ESTILOS FORMALES UML =====
+    classDef actor fill:#ffffff,stroke:#000000,stroke-width:3px,font-weight:bold
+    classDef usecase fill:#ffffff,stroke:#000000,stroke-width:2px
+    classDef sistema fill:#f8f8f8,stroke:#666666,stroke-width:4px,font-weight:bold
+    
+    %% Aplicar estilos
+    class Jugador,IA,Servidor actor
+    class UC01,UC02,UC03,UC04,UC05,UC06,UC07,UC08,UC09,UC10,UC11,UC12,UC13,UC14,UC15,UC16,UC17,UC18,UC19,UC20 usecase
+    class Sistema sistema
+        </div>
+
+        <div class="legend">
+            <h3>Leyenda del Diagrama</h3>
+            <ul>
+                <li><strong>👤 Actores:</strong> Entidades externas que interactúan con el sistema</li>
+                <li><strong>○ Casos de Uso:</strong> Funcionalidades del sistema (elipses según UML)</li>
+                <li><strong>≪include≫:</strong> Relación de dependencia obligatoria</li>
+                <li><strong>≪extend≫:</strong> Relación de extensión condicional</li>
+                <li><strong>🎮 Frontera del Sistema:</strong> Límite entre actores y funcionalidades internas</li>
+            </ul>
+            
+            <h3>Actores del Sistema</h3>
+            <ul>
+                <li><strong>Jugador (Cliente):</strong> Usuario final con interfaz JavaFX y conexión TCP/IP</li>
+                <li><strong>Inteligencia Artificial:</strong> Algoritmos Minimax y estrategias Hunt & Target</li>
+                <li><strong>Administrador Servidor:</strong> Gestión concurrente y sincronización en tiempo real</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+    </script>
+</body>
+</html>

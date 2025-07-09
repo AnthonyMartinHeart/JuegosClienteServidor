@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <title>Diagrama de Arquitectura</title>
+</head>
+<body>
+    <div class="mermaid">
+graph TB
+    subgraph "🖥️ Cliente JavaFX"
+        A[📱 MainApplication] --> B[🎮 MenuController]
+        B --> C[🎯 TicTacToe UI]
+        B --> D[⚓ Battleship UI]
+        B --> E[📡 ClientHandler]
+    end
+    
+    subgraph "🌐 Red TCP/IP"
+        E <--> F[🔌 Socket Connection]
+    end
+    
+    subgraph "🖥️ Servidor Multihilo"
+        F <--> G[🖥️ GameServer]
+        G --> H[👤 ClientHandler Server]
+        H --> I[🏠 GameRoom]
+        I --> J[🎯 TicTacToeGame]
+        I --> K[⚓ BattleshipGame]
+        J --> L[🧠 TicTacToeAI]
+        K --> M[🗺️ Board & Ships]
+    end
+    
+    subgraph "📚 Lógica de Negocio"
+        N[👤 Player] --> J
+        N --> K
+        O[📨 GameMessage] --> H
+        P[⚙️ GameConstants] --> J
+        P --> K
+        Q[🎲 Algoritmos IA] --> L
+        Q --> M
+    end
+    
+    subgraph "🔧 Patrones de Diseño"
+        R[🏗️ MVC Pattern]
+        S[👁️ Observer Pattern]
+        T[🤝 Mediator Pattern]
+        U[🎯 Strategy Pattern]
+    end
+    
+    %% Relaciones de patrones
+    A -.-> R
+    B -.-> R
+    I -.-> S
+    I -.-> T
+    L -.-> U
+    
+    %% Estilos
+    style A fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    style G fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    style J fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px
+    style K fill:#fff3e0,stroke:#ef6c00,stroke-width:3px
+    style L fill:#ffebee,stroke:#c62828,stroke-width:3px
+    style M fill:#fce4ec,stroke:#ad1457,stroke-width:3px
+    style F fill:#f1f8e9,stroke:#33691e,stroke-width:3px
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>

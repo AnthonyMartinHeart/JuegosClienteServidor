@@ -1,0 +1,99 @@
+@startuml Diagrama_Colaboracion_Formal
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam object {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    BorderThickness 2
+    FontName Arial
+    FontSize 11
+}
+skinparam note {
+    BackgroundColor #FFFFCC
+    BorderColor #CCCCCC
+}
+
+title Diagrama de Colaboración\nSistema de Juegos Cliente-Servidor\n(Escenario: Jugar Tic-Tac-Toe vs IA)
+
+' ===== OBJETOS DEL SISTEMA =====
+
+object ":Cliente\n(MenuController)" as cliente
+object ":GameServer" as servidor
+object ":ClientHandler" as handler
+object ":GameRoom" as sala
+object ":TicTacToeGame" as juego
+object ":TicTacToeAI" as ia
+object ":Player" as jugador
+
+' ===== POSICIONAMIENTO =====
+
+cliente -right-> servidor
+servidor -down-> handler
+handler -right-> sala
+sala -down-> juego
+juego -left-> ia
+handler -up-> jugador
+
+' ===== MENSAJES NUMERADOS =====
+
+cliente -> servidor : 1: conectar(puerto)
+servidor -> handler : 2: crearClientHandler(socket)
+handler -> jugador : 3: crearJugador(nombre, id)
+cliente -> handler : 4: seleccionarJuego("TICTACTOE")
+handler -> sala : 5: crearSala(tipoJuego)
+sala -> juego : 6: inicializarJuego()
+cliente -> handler : 7: realizarMovimiento(fila, col)
+handler -> juego : 8: validarMovimiento(fila, col)
+juego -> juego : 9: actualizarTablero(fila, col)
+juego -> ia : 10: calcularMejorJugada(tablero)
+ia -> juego : 11: devolverMovimiento(filaIA, colIA)
+juego -> juego : 12: aplicarMovimientoIA(filaIA, colIA)
+juego -> juego : 13: verificarVictoria()
+handler -> cliente : 14: enviarEstadoJuego(resultado)
+
+' ===== NOTAS EXPLICATIVAS =====
+
+note top of cliente
+  **Cliente JavaFX**
+  - Interfaz gráfica del usuario
+  - Maneja eventos de UI
+  - Envía comandos al servidor
+end note
+
+note right of servidor
+  **Servidor TCP/IP**
+  - Acepta conexiones
+  - Gestiona múltiples clientes
+  - Coordina salas de juego
+end note
+
+note bottom of ia
+  **Inteligencia Artificial**
+  - Algoritmo Minimax
+  - Evaluación de tablero
+  - Decisiones estratégicas
+end note
+
+note left of sala
+  **Sala de Juego**
+  - Contiene jugadores
+  - Gestiona estado del juego
+  - Sincroniza acciones
+end note
+
+' ===== RESPONSABILIDADES =====
+
+note as N1
+  **Flujo de Colaboración:**
+  1-3: Establecimiento de conexión
+  4-6: Configuración del juego
+  7-9: Movimiento del jugador humano
+  10-12: Respuesta de la IA
+  13-14: Verificación y comunicación
+end note
+
+N1 .. cliente
+N1 .. servidor
+
+@enduml

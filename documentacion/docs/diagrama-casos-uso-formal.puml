@@ -1,0 +1,154 @@
+@startuml Diagrama_Casos_Uso_Formal
+
+' Tema y configuración de estilo formal UML
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam title {
+    FontName Arial
+    FontSize 14
+    FontStyle bold
+}
+
+' Configuración de actores (figuras humanas)
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    BorderThickness 2
+    FontName Arial
+    FontSize 10
+}
+
+' Configuración de casos de uso (elipses)
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    BorderThickness 2
+    FontName Arial
+    FontSize 9
+}
+
+' Configuración de la frontera del sistema
+skinparam rectangle {
+    BackgroundColor #F8F8F8
+    BorderColor #666666
+    BorderThickness 3
+    FontStyle bold
+    FontName Arial
+}
+
+' Configuración de relaciones
+skinparam arrow {
+    Color #000000
+    FontName Arial
+    FontSize 8
+}
+
+title Diagrama de Casos de Uso\nSistema de Juegos Cliente-Servidor
+
+' ===== ACTORES =====
+:Jugador: as Jugador
+:Inteligencia\nArtificial: as IA  
+:Administrador\nServidor: as Servidor
+
+' ===== FRONTERA DEL SISTEMA =====
+rectangle "Sistema de Juegos Cliente-Servidor" as Sistema {
+    
+    ' --- Casos de Uso de Gestión ---
+    usecase "Conectar al\nServidor" as UC01
+    usecase "Autenticar\nUsuario" as UC02
+    usecase "Seleccionar\nJuego" as UC03
+    usecase "Desconectarse\ndel Sistema" as UC04
+    
+    ' --- Casos de Uso de Tic-Tac-Toe ---
+    usecase "Iniciar Partida\nTic-Tac-Toe" as UC05
+    usecase "Realizar\nMovimiento TTT" as UC06
+    usecase "Validar\nMovimiento TTT" as UC07
+    usecase "Calcular Jugada\nÓptima (IA)" as UC08
+    
+    ' --- Casos de Uso de Batalla Naval ---
+    usecase "Iniciar Partida\nBatalla Naval" as UC09
+    usecase "Configurar\nTablero" as UC10
+    usecase "Colocar\nBarcos" as UC11
+    usecase "Realizar\nDisparo" as UC12
+    usecase "Procesar\nImpacto" as UC13
+    usecase "Calcular\nEstrategia Naval" as UC14
+    
+    ' --- Casos de Uso del Sistema ---
+    usecase "Gestionar\nConexiones" as UC15
+    usecase "Crear Sala\nde Juego" as UC16
+    usecase "Sincronizar\nEstado Juego" as UC17
+    usecase "Validar\nCondición Victoria" as UC18
+    usecase "Registrar\nResultados" as UC19
+    usecase "Notificar\nEventos" as UC20
+}
+
+' ===== RELACIONES ACTOR-CASO DE USO =====
+' Jugador principal
+Jugador --> UC01 : ""
+Jugador --> UC03 : ""
+Jugador --> UC04 : ""
+Jugador --> UC05 : ""
+Jugador --> UC06 : ""
+Jugador --> UC09 : ""
+Jugador --> UC10 : ""
+Jugador --> UC11 : ""
+Jugador --> UC12 : ""
+
+' Inteligencia Artificial
+IA --> UC08 : ""
+IA --> UC14 : ""
+
+' Servidor/Administrador
+Servidor --> UC15 : ""
+Servidor --> UC16 : ""
+Servidor --> UC17 : ""
+Servidor --> UC19 : ""
+Servidor --> UC20 : ""
+
+' ===== RELACIONES INCLUDE =====
+UC01 ..> UC02 : <<include>>
+UC01 ..> UC15 : <<include>>
+UC03 ..> UC16 : <<include>>
+UC05 ..> UC06 : <<include>>
+UC09 ..> UC10 : <<include>>
+UC09 ..> UC11 : <<include>>
+UC06 ..> UC07 : <<include>>
+UC12 ..> UC13 : <<include>>
+UC06 ..> UC18 : <<include>>
+UC12 ..> UC18 : <<include>>
+UC05 ..> UC17 : <<include>>
+UC09 ..> UC17 : <<include>>
+UC18 ..> UC19 : <<include>>
+UC17 ..> UC20 : <<include>>
+
+' ===== RELACIONES EXTEND =====
+UC08 ..> UC06 : <<extend>>\n[vs IA]
+UC14 ..> UC12 : <<extend>>\n[vs IA]
+
+' ===== GENERALIZACIONES =====
+UC05 --|> "Partida\nMultijugador" : ""
+UC09 --|> "Partida\nMultijugador" : ""
+
+' ===== NOTAS EXPLICATIVAS =====
+note top of IA
+<b>Inteligencia Artificial</b>
+- Algoritmo Minimax (TTT)
+- Estrategias Hunt & Target (Naval)
+- Oponente virtual inteligente
+end note
+
+note right of Servidor
+<b>Servidor de Juegos</b>
+- Gestión concurrente
+- Sincronización en tiempo real
+- Persistencia de resultados
+end note
+
+note bottom of Jugador
+<b>Usuario Cliente</b>
+- Interfaz gráfica JavaFX
+- Conexión TCP/IP
+- Experiencia multiplayer
+end note
+
+@enduml

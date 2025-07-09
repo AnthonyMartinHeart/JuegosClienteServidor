@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Diagrama de Secuencia - Sistema de Juegos</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .diagram-container {
+            width: 100%;
+            text-align: center;
+            background: white;
+        }
+        .mermaid {
+            background: white;
+        }
+        .export-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+        }
+        .export-button:hover {
+            background: #005a9e;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Diagrama de Secuencia - Flujo Principal de Juego</h1>
+    
+    <button class="export-button" onclick="exportSVG()">📸 Exportar PNG</button>
+    
+    <div class="diagram-container">
+        <div class="mermaid">
+sequenceDiagram
+    participant C1 as Cliente 1
+    participant S as Servidor
+    participant C2 as Cliente 2
+    participant G as GameRoom
+    participant AI as IA
+
+    Note over C1,AI: Conexión y Configuración Inicial
+    
+    C1->>S: Conectar al servidor
+    S->>C1: Confirmar conexión
+    C1->>S: Solicitar juego (TicTacToe/Battleship)
+    S->>G: Crear/Buscar GameRoom
+    
+    alt Modo Multijugador
+        S->>C1: Esperando oponente...
+        C2->>S: Conectar al servidor
+        S->>C2: Confirmar conexión
+        C2->>S: Solicitar mismo tipo de juego
+        S->>G: Agregar C2 a GameRoom
+        G->>S: GameRoom completo
+        S->>C1: Oponente encontrado
+        S->>C2: Oponente encontrado
+    else Modo IA
+        S->>G: Crear jugador IA
+        G->>AI: Inicializar IA
+        S->>C1: Oponente IA listo
+    end
+    
+    Note over C1,AI: Fase de Juego
+    
+    G->>C1: Tu turno
+    G->>C2: Esperando...
+    
+    loop Ciclo de Juego
+        C1->>S: Enviar movimiento
+        S->>G: Procesar movimiento
+        G->>G: Validar movimiento
+        
+        alt Movimiento válido
+            G->>S: Movimiento aceptado
+            S->>C1: Movimiento confirmado
+            S->>C2: Actualizar estado
+            
+            G->>G: Verificar fin de juego
+            
+            alt Juego continúa
+                alt Modo Multijugador
+                    G->>C2: Tu turno
+                    G->>C1: Esperando...
+                    C2->>S: Enviar movimiento
+                    S->>G: Procesar movimiento
+                    Note right of G: Repetir validación
+                else Modo IA
+                    G->>AI: Tu turno
+                    AI->>AI: Calcular mejor movimiento
+                    AI->>G: Enviar movimiento IA
+                    G->>S: Procesar movimiento IA
+                    S->>C1: Actualizar estado
+                end
+            else Juego terminado
+                G->>S: Resultado final
+                S->>C1: Fin del juego
+                S->>C2: Fin del juego
+                Note over C1,C2: Mostrar resultado
+            end
+        else Movimiento inválido
+            G->>S: Movimiento rechazado
+            S->>C1: Error: movimiento inválido
+            Note right of C1: Solicitar nuevo movimiento
+        end
+    end
+    
+    Note over C1,AI: Finalización
+    
+    alt Nuevo juego
+        C1->>S: Solicitar nueva partida
+        Note over C1,AI: Reiniciar proceso
+    else Desconexión
+        C1->>S: Desconectar
+        S->>G: Remover jugador
+        G->>C2: Oponente desconectado
+        S->>C1: Desconexión confirmada
+    end
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#ffffff',
+                background: '#ffffff',
+                secondaryColor: '#f9f9f9',
+                tertiaryColor: '#f0f0f0'
+            },
+            sequence: {
+                useMaxWidth: false,
+                width: 1200
+            }
+        });
+
+        function exportSVG() {
+            setTimeout(() => {
+                const svg = document.querySelector('.mermaid svg');
+                if (svg) {
+                    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                    svg.style.background = 'white';
+                    
+                    const svgData = new XMLSerializer().serializeToString(svg);
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    
+                    img.onload = function() {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0);
+                        
+                        const link = document.createElement('a');
+                        link.download = 'diagrama-secuencia.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    };
+                    
+                    const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                    const url = URL.createObjectURL(blob);
+                    img.src = url;
+                } else {
+                    alert('Por favor espera a que el diagrama se renderice completamente');
+                }
+            }, 1000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const svg = document.querySelector('.mermaid svg');
+                if (svg) {
+                    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                    console.log('✅ Diagrama listo para exportar');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

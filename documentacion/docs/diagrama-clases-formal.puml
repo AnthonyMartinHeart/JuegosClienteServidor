@@ -1,0 +1,226 @@
+@startuml Diagrama_Clases_Formal
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #000000
+    BorderThickness 2
+    FontName Arial
+    FontSize 11
+    AttributeFontSize 10
+    StereotypeFontSize 9
+}
+
+title Diagrama de Clases\nSistema de Juegos Cliente-Servidor
+
+' ===== CAPA DE APLICACIÓN =====
+
+class MainApplication {
+    - primaryStage: Stage
+    --
+    + start(stage: Stage): void
+    + showErrorAlert(title: String, message: String): void
+    + getPrimaryStage(): Stage
+    + main(args: String[]): void
+}
+
+' ===== CAPA DE SERVIDOR =====
+
+class GameServer {
+    - puerto: int
+    - clientesConectados: List<ClientHandler>
+    - salasDeJuego: Map<String, GameRoom>
+    - estaEjecutando: boolean
+    --
+    + iniciarServidor(): void
+    + detenerServidor(): void
+    + aceptarClientes(): void
+    + crearSalaJuego(tipoJuego: String): GameRoom
+    + eliminarSala(salaId: String): void
+}
+
+class ClientHandler {
+    - socket: Socket
+    - jugador: Player
+    - salaActual: GameRoom
+    - entrada: BufferedReader
+    - salida: PrintWriter
+    --
+    + manejarCliente(): void
+    + enviarMensaje(mensaje: GameMessage): void
+    + recibirMensaje(): GameMessage
+    + desconectar(): void
+}
+
+class GameRoom {
+    - salaId: String
+    - tipoJuego: String
+    - jugadores: List<Player>
+    - juegoActual: Object
+    - estadoSala: String
+    --
+    + agregarJugador(jugador: Player): boolean
+    + removerJugador(jugador: Player): void
+    + iniciarJuego(): void
+    + finalizarJuego(): void
+    + sincronizarEstado(): void
+}
+
+' ===== CAPA DE MODELO =====
+
+class Player {
+    - nombre: String
+    - id: String
+    - puntuacion: int
+    - conectado: boolean
+    --
+    + setNombre(nombre: String): void
+    + getId(): String
+    + getPuntuacion(): int
+    + estaConectado(): boolean
+}
+
+class GameMessage {
+    - type: String
+    - gameType: String
+    - playerId: String
+    - data: Object
+    - timestamp: String
+    --
+    + createConnectMessage(playerId: String): GameMessage
+    + createMoveMessage(gameType: String, playerId: String, move: String): GameMessage
+    + toJson(): String
+    + fromJson(json: String): GameMessage
+}
+
+class GameConstants {
+    + DEFAULT_SERVER_HOST: String
+    + DEFAULT_SERVER_PORT: int
+    + GAME_TICTACTOE: String
+    + GAME_BATTLESHIP: String
+    + TICTACTOE_BOARD_SIZE: int
+    + BATTLESHIP_BOARD_SIZE: int
+    --
+}
+
+' ===== JUEGOS =====
+
+class TicTacToeGame {
+    - tablero: char[][]
+    - jugadorActual: char
+    - juegoTerminado: boolean
+    - ganador: char
+    --
+    + realizarMovimiento(fila: int, col: int): boolean
+    + validarMovimiento(fila: int, col: int): boolean
+    + verificarVictoria(): boolean
+    + verificarEmpate(): boolean
+    + reiniciarJuego(): void
+}
+
+class TicTacToeAI {
+    - algoritmo: String
+    - dificultad: int
+    --
+    + calcularMejorJugada(tablero: char[][]): Point
+    + minimax(tablero: char[][], profundidad: int, esMaximizando: boolean): int
+    + evaluarTablero(tablero: char[][]): int
+}
+
+class BattleshipGame {
+    - tableroJugador1: Board
+    - tableroJugador2: Board
+    - turnoActual: int
+    - juegoTerminado: boolean
+    - ganador: Player
+    --
+    + configurarTableros(): void
+    + realizarDisparo(x: int, y: int): String
+    + validarDisparo(x: int, y: int): boolean
+    + verificarVictoria(): boolean
+    + cambiarTurno(): void
+}
+
+class Board {
+    - tamaño: int
+    - celdas: char[][]
+    - barcos: List<Ship>
+    - disparosRecibidos: List<Point>
+    --
+    + colocarBarco(barco: Ship): boolean
+    + recibirDisparo(x: int, y: int): String
+    + todosBarcosDerrotados(): boolean
+    + validarPosicion(x: int, y: int): boolean
+}
+
+class Ship {
+    - tipo: String
+    - tamaño: int
+    - orientacion: String
+    - posicionX: int
+    - posicionY: int
+    - vidas: int
+    --
+    + recibirImpacto(): void
+    + estaHundido(): boolean
+    + getPosiciones(): List<Point>
+}
+
+' ===== INTERFAZ DE USUARIO =====
+
+class MenuController {
+    - primaryStage: Stage
+    - gameClient: GameClient
+    --
+    + initialize(): void
+    + onConnectServer(): void
+    + onSelectTicTacToe(): void
+    + onSelectBattleship(): void
+    + showGameWindow(): void
+}
+
+' ===== RELACIONES =====
+
+MainApplication ||-- MenuController : controla
+
+GameServer ||--o{ ClientHandler : maneja
+ClientHandler }o-- Player : representa
+ClientHandler }o-- GameRoom : pertenece_a
+
+GameRoom ||--o{ Player : contiene
+GameRoom ||-- TicTacToeGame : puede_tener
+GameRoom ||-- BattleshipGame : puede_tener
+
+TicTacToeGame ..> TicTacToeAI : utiliza
+
+BattleshipGame ||--o{ Board : tiene
+Board ||--o{ Ship : contiene
+
+GameMessage ..> GameConstants : utiliza
+ClientHandler ..> GameMessage : envía/recibe
+
+MenuController ..> GameMessage : crea
+MenuController ..> Player : gestiona
+
+' ===== NOTAS =====
+
+note right of GameServer
+  Servidor TCP/IP que maneja
+  múltiples clientes simultáneos
+  usando threads separados
+end note
+
+note bottom of TicTacToeAI
+  Implementa algoritmo Minimax
+  para crear oponente inteligente
+  con diferentes niveles
+end note
+
+note left of Board
+  Tablero de 10x10 para
+  Batalla Naval con validación
+  de posiciones de barcos
+end note
+
+@enduml
