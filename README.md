@@ -350,8 +350,8 @@ Proyecto desarrollado como parte del curso de Programación Orientada a Objetos.
 - ✅ Documentación completa
 
 ## 👥 Autores
-- [Nombre Estudiante 1]
-- [Nombre Estudiante 2]
+- Valter Lineros
+- Jorge Martinez
 
 ## 📄 Licencia
 Este proyecto es para fines académicos - Universidad [Nombre Universidad]
